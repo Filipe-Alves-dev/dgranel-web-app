@@ -1,4 +1,4 @@
-name: CI D'Granel
+name: CI/CD D'Granel
 
 on:
   push:
@@ -23,3 +23,19 @@ jobs:
           context: .
           push: true
           tags: filipeac/dgranel-web:latest
+
+  deploy-aws:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy na AWS via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            sudo docker pull filipeac/dgranel-web:latest
+            sudo docker stop site-dgranel || true
+            sudo docker rm site-dgranel || true
+            sudo docker run -d -p 80:80 --name site-dgranel --restart always filipeac/dgranel-web:latest
