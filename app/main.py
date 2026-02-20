@@ -1,0 +1,60 @@
+from flask import Flask
+import os
+import requests
+from datetime import datetime
+import pytz
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    # 1. Configurações
+    url_cotacao = os.getenv('API_ECONOMIA_URL', 'https://economia.awesomeapi.com.br/last/USD-BRL,BTC-BRL')
+    empresa = os.getenv('NOME_EMPRESA', "D'Granel Logistica")
+    ambiente = os.getenv('AMBIENTE', 'Teste')
+    gateway = os.getenv('API_GATEWAY_URL', 'https://api.dgranel.com.br/v1')
+
+    # 2. Busca Dados
+    try:
+        r = requests.get(url_cotacao, timeout=10)
+        d = r.json()
+        dolar = f"R$ {float(d['USDBRL']['bid']):.2f}"
+        bitcoin = f"R$ {float(d['BTCBRL']['bid']):.2f}"
+    except:
+        dolar = "Indisponivel"
+        bitcoin = "Indisponivel"
+
+    # 3. Data e Hora
+    fuso = pytz.timezone('America/Sao_Paulo')
+    agora = datetime.now(fuso).strftime('%d/%m/%Y | %H:%M:%S')
+
+    # 4. Retorno HTML limpo
+    return f"""
+    <html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="refresh" content="10">
+        <style>
+            body {{ font-family: sans-serif; background: #f4f4f9; padding: 20px; }}
+            .box {{ background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 400px; }}
+            h2 {{ color: #2c3e50; }}
+            .val {{ font-size: 20px; font-weight: bold; color: #27ae60; }}
+        </style>
+    </head>
+    <body>
+        <div class="box">
+            <h2>🚚 Monitor D'Granel</h2>
+            <p>Empresa: {empresa}</p>
+            <p>Dolar: <span class="val">{dolar}</span></p>
+            <p>Bitcoin: <span class="val">{bitcoin}</span></p>
+            <hr>
+            <p>Hora: {agora}</p>
+            <p>Ambiente: {ambiente}</p>
+            <p>Status: <span style="color:green">Online</span></p>
+        </div>
+    </body>
+    </html>
+    """
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)
