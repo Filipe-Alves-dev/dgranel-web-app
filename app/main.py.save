@@ -1,0 +1,20 @@
+ flask import Flask 
+import os 
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+	# Aqui o Python lê a variável de  ambiente 
+	ambiente = os.getenv("AMBIENTE", "Ambiente não configurado")
+	empresa = os.getenv("NOME_EMPRESA", "D'Granel Logística")
+
+	return f"""
+	<h1>Sistema de Logística - {empresa}</h1>
+	<p><b>Status do Servidor:</b> Operacional</p>
+	<p><b>Ambiente atual:</b> {ambiente}</p>
+	<p><b>API Gateway:</b> Conectado</p>
+	"""
+
+if __name__ == "__main__":
+	app.run(host='0.0.0.0', port =5000)

@@ -1,0 +1,39 @@
+from flask import Flask
+import os
+import requests  # Peça nova para fazer ligações externas
+from datetime import datetime
+import pytz
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    # 1. Busca as configurações no GPS (.env)
+    url_cotacao = os.getenv('API_ECONOMIA_URL')
+    empresa = os.getenv('NOME_EMPRESA', "D'Granel Logística")
+    
+    # 2. Faz a "ligação" para buscar o Dólar (Simulando o Gateway)
+    try:
+        resposta = requests.get(url_cotacao)
+        dados = resposta.json()
+        valor_dolar = dados['USDBRL']['bid']
+        valor_dolar = f"R$ {float(valor_dolar):.2f}"
+    except:
+        valor_dolar = "Indisponível"
+
+    # 3. Pega o horário de Brasília
+    fuso = pytz.timezone('America/Sao_Paulo')
+    agora = datetime.now(fuso).strftime('%d/%m/%Y %H:%M:%S')
+
+    return f"""
+    <h1>Painel de Cotação - {empresa}</h1>
+    <p><b>Dólar Agora:</b> {valor_dolar}</p>
+    <p><b>Última Atualização:</b> {agora}</p>
+    <hr>
+    <p><b>Rota da API (via .env):</b> {url_cotacao}</p>
+    <p><b>Status:</b> Operacional</p>
+    db
+    """
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)

@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  backend-logistica:
+    image: dgranel-backend
+    build: .
+    ports:
+      - "80:5000"  # Mapeia a porta 80 do seu PC para a 5000 do Python
+    env_file:
+      - .env       # Aqui a mágica do Otávio acontece: o Compose lê seu .env
+    restart: always
