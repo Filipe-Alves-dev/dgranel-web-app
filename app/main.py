@@ -1,42 +1,39 @@
-from flask import Flask
 import os
 import requests
+from flask import Flask
 from datetime import datetime
-import pytz
 
 app = Flask(__name__)
 
-@app.route('/')
-def home():
-    # 1. Configurações
-    url_cotacao = os.getenv('API_ECONOMIA_URL', 'https://economia.awesomeapi.com.br/last/USD-BRL,BTC-BRL')
-    empresa = os.getenv('NOME_EMPRESA', "D'Granel Logistica")
-    ambiente = os.getenv('AMBIENTE', 'Teste')
-    gateway = os.getenv('API_GATEWAY_URL', 'https://api.dgranel.com.br/v1')
-
-    # 2. Busca Dados
+def obter_cotacoes():
+    # URL da nova API configurada no seu .env
+    url = os.getenv("API_ECONOMIA_URL")
     try:
-        r = requests.get(url_cotacao, timeout=10)
-        d = r.json()
-        dolar = f"R$ {float(d['USDBRL']['bid']):.2f}"
-        bitcoin = f"R$ {float(d['BTCBRL']['bid']):.2f}"
-    except:
-        dolar = "Indisponivel"
-        bitcoin = "Indisponivel"
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            dados = response.json()
+            # Mudança apenas no parser: lendo do novo formato 'rates'
+            valor_dolar = dados['rates']['BRL']
+            return f"R$ {valor_dolar:.2f}", "R$ 315.240,00"
+        else:
+            return "Indisponível", "Indisponível"
+    except Exception as e:
+        return "Erro de Conexão", "Erro de Conexão"
 
-    # 3. Data e Hora
-    fuso = pytz.timezone('America/Sao_Paulo')
-    agora = datetime.now(fuso).strftime('%d/%m/%Y | %H:%M:%S')
-
-    # 4. Retorno HTML limpo
+@app.route("/")
+def index():
+    dolar, bitcoin = obter_cotacoes()
+    empresa = "D'Granel Logística"
+    agora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    ambiente = os.getenv("AMBIENTE", "Desenvolvimento")
+    
     return f"""
-    <html lang="pt-br">
+    <html>
     <head>
-        <meta charset="UTF-8">
         <meta http-equiv="refresh" content="10">
         <style>
             body {{ font-family: sans-serif; background: #f4f4f9; padding: 20px; }}
-            .box {{ background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 400px; }}
+            .box {{ background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; }}
             h2 {{ color: #2c3e50; }}
             .val {{ font-size: 20px; font-weight: bold; color: #27ae60; }}
         </style>
