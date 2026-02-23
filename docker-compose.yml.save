@@ -7,7 +7,7 @@ services:
       - ./app:/app
     environment:
       - DB_HOST=db
-      - DB_NAME=logistica_db
+      - DB_NAME=dgranel_db
       - DB_USER=admin
       - DB_PASSWORD=senha_segura_123
     depends_on:
@@ -16,15 +16,15 @@ services:
 
   db:
     image: postgres:15-alpine
-    ports:
-      - "5432:5432"
     environment:
-      - POSTGRES_DB=logistica_db
+      - POSTGRES_DB=dgranel_db
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=senha_segura_123
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: always
+    ports:
+      - "5432:5432"
 
 volumes:
-  postgres_data:
+  postgres_data
