@@ -6,12 +6,15 @@ from datetime import datetime
 app = Flask(__name__)
 
 def obter_cotacoes():
-    url = os.getenv("API_ECONOMIA_URL")
+    # Se a variável de ambiente falhar, ele usa esse link direto
+    url = os.getenv("API_ECONOMIA_URL", "https://economia.awesomeapi.com.br/last/USD-BRL")
+    
     try:
         response = requests.get(url, timeout=5)
         if response.status_code == 200:
             dados = response.json()
-            valor_dolar = dados['rates']['BRL']
+            # Ajustado para o formato real da API: USDBRL -> bid
+            valor_dolar = float(dados['USDBRL']['bid'])
             return f"R$ {valor_dolar:.2f}", "R$ 315.240,00"
         else:
             return "Indisponível", "Indisponível"
@@ -22,14 +25,14 @@ def obter_cotacoes():
 @app.route("/")
 def index():
     dolar, bitcoin = obter_cotacoes()
-    empresa = "D'Granel Logística"
+    empresa = "Logistica de Preços"
     agora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     ambiente = os.getenv("AMBIENTE", "Produção")
 
     return f"""
     <html>
     <head>
-        <title>🚚 Filipe Monitor D'Granel</title>
+        <title> 📈 Monitor De Preços</title>
         <meta http-equiv="refresh" content="300">
         <style>
             body {{ font-family: sans-serif; background: #f4f4f9; padding: 20px; display: flex; justify-content: center; }}
@@ -42,16 +45,14 @@ def index():
     </head>
     <body>
         <div class="box">
-            <h2>🚚 Monitor D'Granel</h2>
-            <p><strong>Engenheiro responsável: Filipe</strong></p>
+            <h2>📈 Monitor De Preços</h2>
             <p>Empresa: {empresa}</p>
             <p>Dolar: <span class="val">{dolar}</span></p>
             <p>Bitcoin: <span class="val">{bitcoin}</span></p>
             <div class="footer">
-                <hr>
-                <p>Hora: {agora}</p>
-                <p>Ambiente: {ambiente}</p>
-                <p>Status: <span style="color:green; font-weight:bold;">Online</span></p>
+                Hora: {agora}<br>
+                Ambiente: {ambiente}<br>
+                Status: <span style="color: #27ae60; font-weight: bold;">Online</span>
             </div>
         </div>
     </body>
@@ -59,4 +60,4 @@ def index():
     """
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host="0.0.0.0", port=5000)
