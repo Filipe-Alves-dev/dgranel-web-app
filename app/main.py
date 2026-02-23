@@ -22,14 +22,14 @@ def obter_cotacoes():
 @app.route("/")
 def index():
     dolar, bitcoin = obter_cotacoes()
-    empresa = "D'Granel Logística"
+    empresa = "Logistica de Preços"
     agora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     ambiente = os.getenv("AMBIENTE", "Produção")
 
     return f"""
     <html>
     <head>
-        <title>🚚 Filipe Monitor D'Granel</title>
+        <title> 📈 Monitor De Preços</title>
         <meta http-equiv="refresh" content="300">
         <style>
             body {{ font-family: sans-serif; background: #f4f4f9; padding: 20px; display: flex; justify-content: center; }}
@@ -42,7 +42,7 @@ def index():
     </head>
     <body>
         <div class="box">
-            <h2>🚚 Monitor D'Granel</h2>
+            <h2> 📈 Monitor De Preços</h2>
             <p><strong>Engenheiro responsável: Filipe</strong></p>
             <p>Empresa: {empresa}</p>
             <p>Dolar: <span class="val">{dolar}</span></p>
